@@ -2,6 +2,8 @@
 
 include('database_connection.php');
 
+session_start();
+
 $form_data = json_decode(file_get_contents("php://input"));
 
 $message = '';
@@ -21,7 +23,7 @@ if(empty($form_data->password))
 }
 else
 {
-    $data[':password'] = $form_data->nip;
+    $data[':password'] = $form_data->password;
    
 }
 
@@ -38,7 +40,7 @@ if(empty($error))
                 $password = $form_data->password;
                 if($password == $row["password"])
                 {
-                    $_SESSION["nama"] = $row["nama"];
+                    $_SESSION["name"] = $row["nama"];
                 }
                 else
                 {
@@ -48,7 +50,7 @@ if(empty($error))
         }
         else
         {
-            $validation_error = "NIP Salah";
+            $validation_error = "Username/NIP Salah";
         }
     }
     

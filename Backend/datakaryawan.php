@@ -28,11 +28,6 @@
             </div>
             <div class="panel-body">
                 <form method="post" ng-submit="submitkaryawan()">
-                    <!-- <div class="form-group">
-                        <label>NIP</label>
-                        <input type="number" name="nip" ng-model="karyawanData.nip"
-                        class="form-control" maxlength="8" disabled/>
-                    </div> -->
                     <div class="form-group">
                         <label>Nama</label>
                         <input type="text" name="nama" ng-model="karyawanData.nama"
@@ -65,8 +60,8 @@
                         class="form-control" maxlength="6"/>
                     </div>
                     <div class="form-group" align="center">
-                        <input type="submit" name="hadir"
-                        class="btn btn-primary" value="Absen" />
+                        <input type="submit" name="input"
+                        class="btn btn-primary" value="Input" />
                     </div>
                 </form>
             <div>

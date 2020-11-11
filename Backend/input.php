@@ -82,11 +82,12 @@ app.controller('input_controller', function($scope, $http){
     $scope.closeMsg = function(){
         $scope.alerMsg = false;
     };
+    
+    $scope.input_form = true;
     $scope.loadKaryawan = function(sel){
         document.getElementById("nip").value = sel.value;
         document.getElementById("nama").value = sel.name;
     };
-    $scope.input_form = true;
 
     $scope.submitInput = function(){
         $http({
