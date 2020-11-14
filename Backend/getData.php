@@ -1,14 +1,19 @@
 <?php
 
- $connect = mysqli_connect("localhost", "root", "16agustus", "db_absensi");  
+include('database_connection.php');
 
- $output = [];  
- $query = "SELECT * FROM tbl_karyawan";  
- $result = mysqli_query($connect, $query);  
- while($row = mysqli_fetch_array($result))  
- {  
-      $output[] = $row;  
- }  
- echo json_encode($output); 
+$arr = array();
+$sql = 'SELECT * from tbl_karyawan';
+$result = $conn->query($sql) or die($sql);
+if ($result->num_rows > 0) {
+     $i=1;
+     while($row = $result->fetch_assoc()) 
+     {
+      $arr[] = array('no'=>$i,'nip'=>$row["nip"],'nama'=>$row["nama"],'fungsional'=>$row["fungsional"],
+      'struktural'=>$row["struktural"],'tgl_masuk'=>$row["tgl_masuk"]);  
+      $i++;
+     }  
+}
+ echo json_encode($arr); 
 
 ?>

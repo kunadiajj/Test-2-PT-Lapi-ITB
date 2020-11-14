@@ -4,6 +4,7 @@ include('database_connection.php');
 
 session_start();
 
+
 $form_data = json_decode(file_get_contents("php://input"));
 
 $message = '';
@@ -29,15 +30,11 @@ else
 
 if(empty($error))
 {
-    $query = 'SELECT * FROM tbl_user Where username ="'.$data[':username'].'"';
-    $statment = $connect->prepare($query);
-    if($statment->execute($data)){
-        $result = $statment->fetchAll();
-        if($statment->rowCount() > 0)
-        {
-            foreach($result as $row)
-            {
-                $password = $form_data->password;
+    $sql = 'SELECT * FROM tbl_user Where username ="'.$data[':username'].'"';
+    $result = $conn->query($sql) or die($sql);
+    if ($result->num_rows > 0) {
+        while($row = $result->fetch_assoc()) {
+            $password = $form_data->password;
                 if($password == $row["password"])
                 {
                     $_SESSION["name"] = $row["nama"];
@@ -46,13 +43,13 @@ if(empty($error))
                 {
                     $validation_error = "PIN Salah";
                 }
-            }
-        }
-        else
-        {
-            $validation_error = "Username/NIP Salah";
         }
     }
+    else
+    {
+        $validation_error = "Username/NIP Salah";
+    }
+
     
 }
 else

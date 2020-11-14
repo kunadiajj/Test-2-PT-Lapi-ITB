@@ -24,42 +24,40 @@ else
     $data[':pin'] = $form_data->nip;
     $data[':status'] ="Hadir";
     $data[':date'] = date('Y-m-d');
-   
+    $date = new DateTime();
+    $date->format('Y-m-d H:i:s');
 }
 
 if(empty($error))
 {
-    $query = 'SELECT * FROM tbl_karyawan Where nip ="'.$data[':nip'].'"';
-    $statment = $connect->prepare($query);
-    if($statment->execute($data)){
-        $result = $statment->fetchAll();
-        if($statment->rowCount() > 0)
+    $sql = 'SELECT * FROM tbl_karyawan Where nip ="'.$data[':nip'].'"';
+    $result = $conn->query($sql) or die($sql);
+    if ($result->num_rows > 0) {
+        while($row = $result->fetch_assoc()) 
         {
-            foreach($result as $row)
+            $pin = $form_data->pin;
+            if($pin == $row["pin"])
             {
-                
-                $pin = $form_data->pin;
-                if($pin == $row["pin"])
-                {
-                    $query2 = 'INSERT INTO tbl_absensi(id, nip, status, date) 
-                    VALUES ("","'.$data[':nip'].'","'.$data[':status'].'", "'.$data[':date'].'")';
-                    $statment2 = $connect->prepare($query2);
-                    if($statment2->execute($data))
-                    {
-                        $message = "Absen Success";
-                    }
-                }
-                else
-                {
-                    $validation_error = "PIN Salah";
+                $sql2 ='INSERT INTO tbl_absensi(id, nip, status, date, date_stamp) 
+                VALUES ("","'.$data[':nip'].'","'.$data[':status'].'", "'.$data[':date'].'","'.$date->format('Y-m-d H:i:s').'")';
+
+                if (mysqli_query($conn, $sql2)) {
+                    $message = 'Absen Success';
+                } else {
+                    $validation_error = "Error: " . $sql2 . "<br>" . mysqli_error($conn);
                 }
             }
-        }
-        else
-        {
-            $validation_error = "NIP Salah";
+            else
+            {
+                $validation_error = "PIN Salah";
+            }
         }
     }
+    else
+    {
+        $validation_error = "NIP Salah";
+    }
+    
     
 }
 else

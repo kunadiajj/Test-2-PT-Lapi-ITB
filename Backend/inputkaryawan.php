@@ -56,7 +56,7 @@ else
 if(empty($error))
 {
     $a="";
-    $b=substr($form_data->masuk,2,2);;
+    $b=substr($form_data->masuk,2,2);
     $nip="";
 
     if($form_data->fungsi == "Engineer"){
@@ -68,30 +68,27 @@ if(empty($error))
     else if($form_data->fungsi == "Support"){
         $a = "03";
     }
-    
-    $query = 'SELECT * FROM tbl_karyawan ORDER BY nip DESC LIMIT 1';
-    $statment = $connect->prepare($query);
-    if($statment->execute($data)){
-        $result = $statment->fetchAll();
-        if($statment->rowCount() > 0)
-        {
-            foreach($result as $row)
-            {
+    $sql = 'SELECT * FROM tbl_karyawan ORDER BY nip DESC LIMIT 1';
+    $result = $conn->query($sql) or die($sql);
+    if ($result->num_rows > 0) {
+        while($row = $result->fetch_assoc()) {
                 $nip = $b.''.$a.''.substr($row["nip"],4)+1;
             }
         }
-        else
-        {
-            $validation_error = "data tidak ada";
-        }
-    }
-    $query = 'INSERT INTO tbl_karyawan(nip, nama, tgl_masuk, fungsional, struktural, pin) VALUES
-     ("'.$nip.'","'.$data[':nama'].'","'.$data[':masuk'].'","'.$data[':fungsi'].'", "'.$data[':struk'].'", "'.$data[':pin'].'")';
-    $statment = $connect->prepare($query);
-    if($statment->execute($data))
+    else
     {
-        $message = 'Input Success';
+        $validation_error = "data tidak ada";
+        
     }
+    $sql = 'INSERT INTO tbl_karyawan(nip, nama, tgl_masuk, fungsional, struktural, pin) VALUES
+    ("'.$nip.'","'.$data[':nama'].'","'.$data[':masuk'].'","'.$data[':fungsi'].'", "'.$data[':struk'].'", "'.$data[':pin'].'")';
+
+    if (mysqli_query($conn, $sql)) {
+        $message = 'Input Success';
+    } else {
+        $validation_error = "Error: " . $sql . "<br>" . mysqli_error($conn);
+    }
+    
 }
 else
 {

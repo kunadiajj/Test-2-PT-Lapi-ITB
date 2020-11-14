@@ -35,12 +35,13 @@ else
 
 if(empty($error))
 {
-    $query = 'INSERT INTO tbl_absensi(id, nip, status, date) VALUES
-     ("","'.$data[':karyawan'].'","'.$data[':keterangan'].'","'.$data[':masuk'].'")';
-    $statment = $connect->prepare($query);
-    if($statment->execute($data))
-    {
+    $sql = 'INSERT INTO tbl_absensi(id, nip, status, date, date_stamp) VALUES
+    ("","'.$data[':karyawan'].'","'.$data[':keterangan'].'","'.$data[':masuk'].'","'.date("Y/m/d h:m:s").'")';
+
+    if ($conn->query($sql) === TRUE) {
         $message = 'Input Success';
+    } else {
+        $validation_error = "Error: " . $sql . "<br>" . $conn->error;
     }
 }
 else
