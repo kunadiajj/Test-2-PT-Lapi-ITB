@@ -44,7 +44,6 @@ session_start();
                 if(isset($_SESSION["name"]))
                 {
             ?>
-            
             <div>
                 <div class="container-fluid">
                     <div class="ods-box" ng-init="tabselector = 'home'">
@@ -62,10 +61,11 @@ session_start();
                             <a class="tab" 
                                 ng-click="tabselector = 'report'" 
                                 ng-class="{'activetab' : tabselector == 'report'}">Report</a>
-                            <button type="button" class="btn btn-danger"  href="logout.php">Logout</button>
+                                <a class="btn btn-danger" href="logout.php" role="button">Logout</a>
                         </center>
                         </div>
                         <div class="ods-box">
+                        <label id="lnip"></label>
                             <!-- home -->
                             <div ng-if="tabselector == 'home'">
                                 <div class="panel panel-default">
@@ -94,6 +94,11 @@ session_start();
                                     </div>
                                     <div class="panel-body">
                                         <form method="post" ng-submit="submitkaryawan()" ng-init="getDataKaryawan()">
+                                            <div class="form-group">
+                                                <label>NIP</label>
+                                                <input type="text" id="nip_kar" ng-model="karyawanData.nip_kar"
+                                                class="form-control {{karyawanData.nip_kar}}" disabled/>
+                                            </div>
                                             <div class="form-group">
                                                 <label>Nama</label>
                                                 <input type="text" id="nama_kar" ng-model="karyawanData.nama_kar"
@@ -126,7 +131,7 @@ session_start();
                                                 class="form-control" maxlength="6"/>
                                             </div>
                                             <div class="form-group" align="center">
-                                                <input type="submit" name="input"
+                                                <input type="submit" id= "btn" name="input"
                                                 class="btn btn-primary" value="Input" />
                                             </div>
                                             <div class="table-responsive" >
@@ -149,8 +154,8 @@ session_start();
                                                         <td>{{data.struktural}}</td>
                                                         <td>{{data.tgl_masuk}}</td>
                                                         <td>
-                                                            <button type="button" class="btn btn-success">Update Data</button>
-                                                            <button type="button" class="btn btn-danger">Hapus Data</button>
+                                                            <button type="button" ng-click="update($event)"  value="{{data.nip}}" class="btn btn-success">Update Data</button>
+                                                            <button type="button" ng-click="hapus($event)"  value="{{data.nip}}" class="btn btn-danger">Hapus Data</button>
                                                         </td>
                                                     </tr>
                                                     
@@ -172,7 +177,7 @@ session_start();
                                         <h3 class="panel-title">Input Izin/Sakit Pegawai</h3>
                                     </div>
                                     <div class="panel-body">
-                                        <form method="post" ng-submit="submitInput()" ng-init="loadData()">
+                                        <form method="post" ng-submit="submitInput()" ng-init="getData()">
                                             <div class="form-group">
                                                 <label>Cari NIP/Nama</label>
                                                 <select ng-model="inputData.karyawan" id="search" "
@@ -183,17 +188,17 @@ session_start();
                                             </div>
                                             <div class="form-group">
                                                 <label>Nip</label>
-                                                <input type="text" id="nip_ket" ng-model="inputData.nip"
-                                                class="form-control {{nip}}" />
+                                                <input type="text" id="nip_ket" ng-model="inputData.nip" ng-change="nipCari()"
+                                                class="form-control {{nip}}" disabled/>
                                             </div>
                                             <div class="form-group">
                                                 <label>Nama</label>
                                                 <input type="text" id="nama_ket" ng-model="inputData.nama"
-                                                class="form-control" />
+                                                class="form-control" disabled/>
                                             </div>
                                             <div class="form-group">
                                                 <label>Tanggal Masuk</label>
-                                                <input type="date" id="masuk_ket" ng-model="inputData.masuk"
+                                                <input type="month" id="masuk_ket" ng-model="inputData.masuk"
                                                 class="form-control" />
                                             </div>
                                             <div class="form-group">
@@ -222,20 +227,15 @@ session_start();
                                         <form method="get" ng-submit="getReport()" ng-init="getData()">
                                             <div class="form-group row">
                                                 <div class="col-xs-4">
-                                                    <label>Tanggal Awal</label>
-                                                    <input type="date" id="tgl_awal" ng-model="report.tgl_awal"
-                                                    class="form-control" />
-                                                </div>
-                                                <div class="col-xs-4">
-                                                    <label>Tanggal Akhir</label>
-                                                    <input type="date" id="tgl_akhir" ng-model="report.tgl_akhir"
+                                                    <label>Periode</label>
+                                                    <input type="month" id="tgl_awal" ng-model="report.tgl_awal"
                                                     class="form-control" />
                                                 </div>
                                             </div>
                                             <div class="form-group">
                                                 <label>Cari NIP/Nama</label>
-                                                <select ng-model="inputData.karyawan" id="search" "
-                                                class="form-control {{karyawan}}" ng-change="loadKaryawan(this)">  
+                                                <select ng-model="inputData.karyawan" id="search2" 
+                                                class="form-control {{karyawan}}" ng-change="loadKaryawan2()">  
                                                     <option value="">Select Karyawan</option>  
                                                     <option ng-repeat="x in karyawan" value={{x.nip}} name={{x.nama}}>{{x.nip}} - {{x.nama}}</option>  
                                                 </select>  
@@ -275,7 +275,6 @@ session_start();
                                         </form>
                                     </div>
                                 </div>
-                                <h3>report</h3>
                             </div>
 
                         </div>
@@ -328,6 +327,7 @@ session_start();
 <script>
 var app = angular.module('login',[]);
 app.controller('login_controller', function($scope, $http){
+    // document.getElementById("lnip").style.display = 'none';
     $scope.closeMsg = function(){
         $scope.alerMsg = false;
     };
@@ -353,34 +353,99 @@ app.controller('login_controller', function($scope, $http){
     };
     $scope.submitkaryawan = function(){
         var data_kar = {
+                nip: document.getElementById("nip_kar").value,
                 nama: document.getElementById("nama_kar").value,
                 masuk: document.getElementById("masuk_kar").value,
                 fungsi: document.getElementById("fungsi_kar").value,
                 struk: document.getElementById("struk_kar").value,
                 pin: document.getElementById("pin_kar").value
             };
-        $http({
-            method:"POST",
-            url:"inputkaryawan.php",
-            data:data_kar
-        }).success(function(data){
-            $scope.alertMsg = true;
-            if(data.error != '')
-            {
-                $scope.alertClass = 'alert-danger';
-                $scope.alertMessage = data.error;
+            var b = document.getElementById("btn").value;
+            if(b == "Update"){
+                //Update Data
+                $http({
+                    method:"POST",
+                    url:"UpdateKaryawan.php",
+                    data:data_kar
+                }).success(function(data){
+                    $scope.alertMsg = true;
+                    if(data.error != '')
+                    {
+                        $scope.alertClass = 'alert-danger';
+                        $scope.alertMessage = data.error;
+                    }
+                    else
+                    {
+                        $scope.alertClass = 'alert-success';
+                        $scope.alertMessage = data.message;
+                        $scope.karyawanData = {};
+                        document.getElementById("nip_kar").value ="",
+                        document.getElementById("nama_kar").value ="",
+                        document.getElementById("masuk_kar").value ="",
+                        document.getElementById("fungsi_kar").value ="",
+                        document.getElementById("struk_kar").value ="",
+                        document.getElementById("pin_kar").value =""
+                        document.getElementById("btn").value = "Input";
+                    }
+                });
+            }else if(b == "Input"){
+                //Input Data
+                $http({
+                    method:"POST",
+                    url:"inputkaryawan.php",
+                    data:data_kar
+                }).success(function(data){
+                    $scope.alertMsg = true;
+                    if(data.error != '')
+                    {
+                        $scope.alertClass = 'alert-danger';
+                        $scope.alertMessage = data.error;
+                    }
+                    else
+                    {
+                        $scope.alertClass = 'alert-success';
+                        $scope.alertMessage = data.message;
+                        $scope.karyawanData = {};
+                        $http({
+                            method: 'POST',
+                            url: 'getData.php',
+                            data: {nip: ""}
+                            }).success(function(data){
+                            $scope.database2 = data;
+                        });
+                    }
+                });
             }
-            else
-            {
-                $scope.alertClass = 'alert-success';
-                $scope.alertMessage = data.message;
-                $scope.karyawanData = {};
-            }
-        });
+        
     };
-    $scope.loadKaryawan = function(sel){
-        document.getElementById("nip").value = sel.value;
-        document.getElementById("nama").value = sel.name;
+    $scope.loadKaryawan = function(){
+        var a = document.getElementById("search").value;
+        document.getElementById("lnip").innerHTML =  a;
+        document.getElementById("nip_ket").value = a;
+        if (a ==""){
+            document.getElementById("nama_ket").value = "";
+        }else{
+            $http({
+                method: 'POST',
+                url: 'getData.php',
+                data: {nip: a}
+                }).success(function(data){
+                    document.getElementById("nama_ket").value = data[0]['nama'];
+            });
+        }
+    };
+    $scope.loadKaryawan2 = function(){
+        var a = document.getElementById("search2").value;
+        document.getElementById("lnip").innerHTML =  a;
+    };
+    $scope.getData = function(){
+        $http({
+            method: 'POST',
+            url: 'getData.php',
+            data: {nip: ""}
+            }).success(function(data){
+            $scope.karyawan = data;
+        });
     };
 
     $scope.submitInput = function(){
@@ -411,8 +476,9 @@ app.controller('login_controller', function($scope, $http){
     $scope.getReport = function(){
         var data_report = {
                 tgl_awal: document.getElementById("tgl_awal").value,
-                tgl_akhir: document.getElementById("tgl_akhir").value
+                nip : document.getElementById("lnip").textContent
             };
+            console.log(data_report);
         $http({
             method:"POST",
             url:"getReport.php",
@@ -423,12 +489,58 @@ app.controller('login_controller', function($scope, $http){
     };
     $scope.getDataKaryawan = function(){
         $http({
-            method: 'get',
-            url: 'getData.php'
-            }).then(function successCallback(response) {
-            // Store response data
-            $scope.database2 = response.data;
+            method: 'POST',
+            url: 'getData.php',
+            data: {nip: ""}
+            }).success(function(data){
+            $scope.database2 = data;
         });
+    };
+    $scope.update = function(ac){
+        console.log(ac.currentTarget.value);
+        $http({
+            method: 'POST',
+            url: 'getData.php',
+            data: {nip: ac.currentTarget.value}
+            }).success(function(data){
+                console.log(data);
+                document.getElementById("nip_kar").value = data[0]['nip'];
+                document.getElementById("nama_kar").value = data[0]['nama'];
+                document.getElementById("masuk_kar").value = data[0]['tgl_masuk'];
+                document.getElementById("fungsi_kar").value = data[0]['fungsional'];
+                document.getElementById("struk_kar").value = data[0]['struktural'];
+                document.getElementById("pin_kar").value = data[0]['pin'];
+                document.getElementById("btn").value = "Update";
+        });
+    };
+    $scope.hapus = function(a){
+        var r = confirm("Apakah Anda Ingin Menghapus Karyawan Dengan NIP "+a.currentTarget.value);
+        if (r == true) {
+            $http({
+                method:"POST",
+                url:"hapusKaryawan.php",
+                data:{nip: a.currentTarget.value}
+            }).success(function(data){
+                $scope.alertMsg = true;
+                if(data.error != '')
+                {
+                    $scope.alertClass = 'alert-danger';
+                    $scope.alertMessage = data.error;
+                }
+                else
+                {
+                    $scope.alertClass = 'alert-success';
+                    $scope.alertMessage = data.message;
+                    $http({
+                        method: 'POST',
+                        url: 'getData.php',
+                        data: {nip: ""}
+                        }).success(function(data){
+                        $scope.database2 = data;
+                    });
+                }
+            });
+        }
     };
 });
 </script>

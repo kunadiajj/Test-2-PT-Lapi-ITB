@@ -4,58 +4,38 @@ include('database_connection.php');
 
 $form_data = json_decode(file_get_contents("php://input"));
 
-$message = '';
-$validation_error = '';
-    
-if(empty($form_data->tgl_awal))
-{
-    $error[] = 'Tanggal Awal Perlu Diisi';
+$arr = array();
+$a=0;
+$bln = substr($form_data->tgl_awal,5);
+if ($bln == "01" or $bln == "03" or $bln == "05" or $bln == "07" or $bln == "08" or $bln == "10" or $bln == "12"){
+    $a=22;
 }
 else
 {
-    $data[':tgl_awal'] = $form_data->tgl_awal;
+    $a=21;
 }
-if(empty($form_data->tgl_akhir))
-{
-    $error[] = 'Tanggal Awal Perlu Diisi';
-}
-else
-{
-    $data[':tgl_akhir'] = $form_data->tgl_akhir;
-}
-
-
-if(empty($error))
-{
-    $sql = 'SELECT a.nip, k.nama,
-    k.fungsional,
-    k.struktural,
-    COUNT(IF(a.`status` = "Sakit",1,NULL)) "sakit",
-    COUNT(IF(a.`status` = "Ijin",1,NULL)) "ijin",
-    COUNT(IF(a.`status` = "Hadir",1,NULL)) "hadir",
-    COUNT(a.nip)"total"
-    from tbl_absensi a LEFT JOIN tbl_karyawan k on a.nip = k.nip
-    where a.date between "'.$data[':tgl_awal'].'" and "'.$data[':tgl_akhir'].'"
-    GROUP BY a.nip, k.nama';
-    $arr = array();
-    $result = $conn->query($sql) or die($sql);
-    if ($result->num_rows > 0) {
-        $i=1;
-        while($row = $result->fetch_assoc()) 
-        {
-            $arr[] = array('no'=>$i,'nip'=>$row["nip"],'nama'=>$row["nama"],'fungsional'=>$row["fungsional"],
-            'struktural'=>$row["struktural"],'hadir'=>$row["hadir"],'sakit'=>$row["sakit"],'total'=>$row["total"],
-            'ijin'=>$row["ijin"],'alpa'=>"22");
-            $i++;
-        }
+$sql = 'SELECT a.nip, k.nama,
+k.fungsional,
+k.struktural,
+COUNT(IF(a.`status` = "Sakit",1,NULL)) "sakit",
+COUNT(IF(a.`status` = "Ijin",1,NULL)) "ijin",
+COUNT(IF(a.`status` = "Hadir",1,NULL)) "hadir",
+COUNT(a.nip)"total"
+from tbl_absensi a LEFT JOIN tbl_karyawan k on a.nip = k.nip
+where a.nip like "%'.$form_data->nip.'%" and a.date like "%'.$form_data->tgl_awal.'%" 
+GROUP BY a.nip, k.nama';
+$result = $conn->query($sql) or die($sql);
+if ($result->num_rows > 0) {
+    $i=1;
+    while($row = $result->fetch_assoc()) 
+    {
+        $alpa = $a - ($row["sakit"]+$row["hadir"]+$row["ijin"]);
+        $arr[] = array('no'=>$i,'nip'=>$row["nip"],'nama'=>$row["nama"],'fungsional'=>$row["fungsional"],
+        'struktural'=>$row["struktural"],'hadir'=>$row["hadir"],'sakit'=>$row["sakit"],'total'=>$row["total"]+$alpa,
+        'ijin'=>$row["ijin"],'alpa'=>$alpa);
+        $i++;
     }
 }
-else
-{
-    $validation_error = implode(", ", $error);
-}
-
-echo $json_info = json_encode($arr);
- 
+ echo json_encode($arr); 
 
 ?>
